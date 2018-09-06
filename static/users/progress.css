@@ -1,0 +1,18 @@
+* {
+    font-family: verdana;
+}
+
+.target {
+    background-color: lightgrey;
+    width: 50vw;
+    padding-right: 0px;
+    margin-right: 0px;
+}
+
+.progress {
+    background-color: darkcyan;
+    text-align: center;
+    height: 30px;
+    width: 0;
+    color: white;
+}

@@ -1,0 +1,58 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+    <link rel="stylesheet" type="text/css" href="test.css">
+
+
+</head>
+
+<body onload="progress()">
+
+<h1>Progress bar</h1>
+
+
+
+<div class="target" id="goal1">
+    <div class="progress" id="completion1"></div>
+</div>
+<br />
+
+<div class="target" id="goal2">
+    <div class="progress" id="completion2"></div>
+</div>
+<br />
+
+<div class="target" id="goal3">
+    <div class="progress" id="completion3"></div>
+</div>
+<br />
+
+<script>
+  var count = 1;
+  var total = document.getElementsByClassName("progress")
+
+  function progress(){
+    let progressbar = document.getElementById("completion" + count);
+    let width = 0
+    let timer = setInterval(frame, 10);
+    function frame(){
+        if (width >= 100){
+            clearInterval(timer);
+        } else {
+            width ++;
+            progressbar.style.width = width + '%';
+            progressbar.innerHTML = width + '%';
+        }
+    }
+    if (count < total.length){
+      count += 1;
+      progress();
+    }
+  }
+</script>
+
+
+</body>
+
+
+</html>

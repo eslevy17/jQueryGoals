@@ -1,0 +1,313 @@
+<html>
+  <head>
+    {% load mathfilters %}
+
+    <title>Activity Progress</title>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+    <script src="https://canvasjs.com/assets/script/canvasjs.min.js"></script>
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+    <link type="text/css" rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0-rc.2/css/materialize.min.css"  media="screen,projection"/>
+
+    {% load static %}
+    <link type="text/css" rel="stylesheet" href="{% static "users/progress.css" %}"  media="screen,projection"/>
+    <script src="{% static "users/progress.js" %}"></script>
+
+    <style>
+      hr {
+        height: 1px;
+        width: 95%;
+        color: grey;
+        background-color: lightgrey;
+        margin: 0px;
+        margin-top: 25px;
+        box-sizing: content-box;
+        border: 0;
+      }
+
+      .inline-block{
+        display: inline-block;
+      }
+
+      .block{
+        display: block;
+      }
+
+      .vert-align-top{
+        vertical-align: top;
+      }
+
+      .line-height-30{
+        line-height:30px;
+      }
+
+      .no-margin-padding{
+        margin:0px;
+        padding:0px;
+      }
+
+      .width-10vw{
+        width: 15vw;
+      }
+    </style>
+  </head>
+  <body class="green lighten-5">
+    <nav class="cyan darken-1">
+      <div class="nav-wrapper">
+        <a style="padding-left:10px;" href="#" class="brand-logo">Track Your Progress</a>
+        <ul id="nav-mobile" class="right hide-on-med-and-down">
+          <!-- <li></li>
+          <li></li> -->
+          <li><a href="/logoff">Logout</a></li>
+        </ul>
+      </div>
+    </nav>
+
+    <div style="height:50px;"></div>
+
+    <div class="container">
+      <div id="events" class="hide">{{ events }}</div>
+      <div id="monthevents" class="hide">{{ months }}</div>
+
+      <div id="goals">
+        {% for goal in goals %}
+          <div id="g{{ goal.id }}" class="goal block" style="margin: 25px 0px;">
+            <div class="inline-block vert-align-top width-10vw line-height-30">{{ goal.activity.activity }}</div>
+            <div class="target inline-block z-depth-2" id="progress{{ goal.id }}">
+              <div class="cyan darken-1 progress line-height-30 inline-block no-margin-padding" id="completion{{ goal.id }}"></div>
+            </div>
+            <button id="overviewbutton{{ goal.id }}" class="but-view inline-block vert-align-top btn-floating btn-small cyan"><i class="inline-block material-icons">list</i></button>
+            <button id="hiderbutton{{ goal.id }}" class="but-hide inline-block vert-align-top btn-floating btn-small cyan"><i class="inline-block material-icons">insert_chart</i></button>
+
+            <div id="hide{{ goal.id }}" class="hide">0</div>
+
+            <center><div id="committed{{ goal.id }}" class="committed" style="margin-top:35px;"></div></center>
+
+            {% for event in goal.events.all %}
+              <script>
+                document.getElementById('hide{{ goal.id }}').innerHTML = parseFloat(document.getElementById('hide{{ goal.id }}').innerHTML) + parseFloat('{{ event.duration }}');
+              </script>
+            {% endfor %}
+            <script>
+              document.getElementById('committed{{ goal.id }}').innerHTML = document.getElementById('hide{{ goal.id }}').innerHTML + ' of {{ goal.goal }} hour(s)';
+              document.getElementById('hide{{ goal.id }}').innerHTML = (parseFloat(document.getElementById('hide{{ goal.id }}').innerHTML)/(parseFloat('{{ goal.goal }}')))*100;
+              console.log(document.getElementById('hide{{ goal.id }}').innerHTML);
+            </script>
+            <script>
+              progress(parseFloat(document.getElementById('hide{{ goal.id }}').innerHTML), '{{ goal.id }}');
+            </script>
+
+            <center>
+              {% csrf_token %}
+              <button id="add{{ goal.id }}" class="but-add block vert-align-top btn green lighten-1 hoverable" onclick="addToEvent(this.id)" style="margin-top:20px;">Extend Goal by 3 Hours<i class="inline-block material-icons right">add</i></button>
+
+              <hr>
+
+              <form action='/add_event' method='post' id="event_form{{ goal.id }}" class="event_form">
+                {% csrf_token %}
+                <table style="width:auto">
+                  <tr>
+                    <td><b>Log Hours</b></td>
+                    <td><b>|</b></td>
+                    <td>Event Date:</td>
+                    <td class="input-field">
+                      <input name="goal_id" type="hidden" value="{{ goal.id }}">
+                      <input name="date" type="text" class="datepicker" placeholder="Enter Completed Date">
+                    </td>
+
+                    <td>Event Duration:</td>
+                    <td class="input-field">
+                      <select name="duration" class="browser-default">
+                        <option value="0" disabled selected>Choose your option</option>
+                        {% for i in ''|center:24 %}
+                          <option value="{{ forloop.counter0|add:1|div:4 }}">{{ forloop.counter0|add:1|div:4 }} hour(s)</option>
+                        {% endfor %}
+                      </select>
+                    </td>
+
+                    <td><button class="btn btn-primary cyan" style="width:100%" type='submit' value='Submit'>Submit<i class="inline-block material-icons right">send</i></button></td>
+                  </tr>
+                </table>
+              </form>
+            </center>
+          </div>
+        {% endfor %}
+      </div>
+
+      <div id="detailview" style="margin-top:50px; margin-bottom:150px;">
+          <button href="#" id="weeklybutton" class="btn-flat disabled">Weekly view</button>
+          <button href="#" id="monthlybutton" class="btn-flat">Monthly view</button>
+          <div id="chartContainer" style="height: 300px; width: 100%;"></div>
+      </div>
+
+      <div style="text-align:center;">
+        <center>
+          <form action='/add_goal' method='post' id="form" class="no-margin-padding">
+            {% csrf_token %}
+            <table style="width:auto">
+              <tr>
+                <td><b>Add A New Goal</b></td>
+                <td><b>|</b></td>
+
+                <td>Activity:</td>
+                <td class="input-field">
+                  <input name="activity" type="text" id="autocomplete" class="autocomplete" placeholder="Add Your Activity Here">
+                </td>
+              <!-- </tr>
+              <tr> -->
+                <td>Goal:</td>
+                <td class="input-field">
+                  <select name="hours" class="browser-default">
+                    <option value="1" selected>1 hour</option>
+                    {% for i in ''|center:9 %}
+                      <option value="{{ forloop.counter0|add:2 }}">{{ forloop.counter0|add:2 }} hours</option>
+                    {% endfor %}
+                  </select>
+                </td>
+              <!-- </tr>
+
+              <tr> -->
+                <td><button class="btn btn-primary cyan" style="width:100%" type='submit' value='Submit'>Submit<i class="inline-block material-icons right">send</i></button></td>
+              </tr>
+            </table>
+          </form>
+        </center>
+      </div>
+    </div>
+
+    <script>
+      function sleep(milliseconds) {
+        var start = new Date().getTime();
+        for (var i = 0; i < 1e7; i++) {
+          if ((new Date().getTime() - start) > milliseconds){ break; }
+        }
+      }
+
+
+      $(document).ready(function(){
+        $('.datepicker').datepicker();
+
+        $('input.autocomplete').autocomplete({
+          data: {
+            "Hiking": null,
+            "Jogging/Running": null,
+            "Reading": null,
+            "Biking": null,
+            "Mountain Climbing": null,
+          }
+        });
+
+        $('.but-hide').hide();
+        $('.but-hide').show();
+
+        $('.but-view').hide();
+        $('.but-add').hide();
+
+        $('#detailview').hide();
+        $('.event_form').hide();
+        $('hr').hide();
+        $('.committed').hide();
+
+        $("#weeklybutton").click(function(){
+          goals = document.getElementsByClassName('goal');
+          for(var i = 0; i < goals.length; i++){
+            console.log(goals[i]['id']+' exists');
+            if($('#'+goals[i]['id']).css('display') != 'none'){
+              break;
+            }
+          }
+
+          var patt = /\d+/i;
+          var id = goals[i]['id'];
+          id = parseInt(patt.exec(id)[0]);
+
+          weeklychart(id);
+          $('#monthlybutton').toggleClass('disabled');
+          $('#weeklybutton').toggleClass('disabled');
+        });
+
+        $("#monthlybutton").click(function(){
+          goals = document.getElementsByClassName('goal');
+          for(var i = 0; i < goals.length; i++){
+            console.log(goals[i]['id']+' exists');
+            if($('#'+goals[i]['id']).css('display') != 'none'){
+              break;
+            }
+          }
+
+          console.log(goals[i]['id']);
+
+          var patt = /\d+/i;
+          var id = parseInt(patt.exec(goals[i]['id'])[0]);
+
+          monthlychart(id);
+          $('#monthlybutton').toggleClass('disabled');
+          $('#weeklybutton').toggleClass('disabled');
+        });
+
+        $(".but-hide").click(function() {
+          var patt = /\d+/i;
+          var n = parseInt(patt.exec(this.id)[0]);
+
+          $('.but-add').show();
+
+          $("#detailview").show();
+          $("#overviewbutton"+n).show();
+          $("#event_form"+n).show();
+          $("#form").hide();
+          $(this).hide();
+          $('hr').show();
+          $('#committed'+n).show();
+
+          $('#overviewbutton'+n).show();
+          $('.but-view').show();
+          $('#hiderbutton'+n).hide();
+          $('.but-hide').hide();
+
+          var goals = document.getElementsByClassName('goal');
+          var w = 0;
+          for(var i = 0; i < goals.length; i++){
+            if(goals[i]['id'] == ('g'+n)){
+              w = i;
+            }
+            $('#'+goals[i]['id']).slideUp();
+            console.log('Hide #'+goals[i]['id']);
+          }
+
+          $('#'+goals[w]['id']).slideDown();
+
+          weeklychart(n);
+        });
+
+        $(".but-view").click(function() {
+          var patt = /\d+/i;
+          var n = parseInt(patt.exec(this.id)[0]);
+
+          $('.but-add').hide();
+
+          $("#detailview").hide();
+          $("#form").show();
+          $(this).hide();
+          $("#hiderbutton"+n).show();
+          $("#event_form"+n).hide();
+          $('hr').hide();
+          $('#committed'+n).hide();
+
+          $('#overviewbutton'+n).hide();
+          $('.but-view').hide();
+          $('#hiderbutton'+n).show();
+          $('.but-hide').show();
+
+          goals = document.getElementsByClassName('goal');
+          for(var i = 0; i < goals.length; i++){
+            $('#'+goals[i]['id']).slideDown();
+            console.log('Show #'+goals[i]['id']);
+          }
+
+          $("#form").show();
+        });
+      });
+    </script>
+
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0-rc.2/js/materialize.min.js"></script>
+  </body>
+</html>

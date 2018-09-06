@@ -1,0 +1,125 @@
+<html>
+<head>
+  <title>Login & Registration</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0-beta/css/materialize.min.css">
+    {% load static %}
+    <link rel="stylesheet" href="{% static "users/user.css" %}">
+
+  </head>
+  <body>
+
+
+
+<!-- Start of Container-->
+    <div class="container white z-depth-2">
+      <div >
+        {% if messages %}
+        <ul class=flash>
+          {% for m in messages %}
+            <li>{{ m }}</li>
+          {% endfor %}
+        </ul>
+        {% endif %}
+      </div>
+
+      <!-- Start of Header-->
+      <ul class="tabs cyan darken-1">
+        <li class="tab col s3">
+          <a class="white-text active" href="#login">login</a>
+        </li>
+        <li class="tab col s3">
+          <a class="white-text" href="#register">register</a>
+        </li>
+      </ul> <!--End of Header -->
+
+
+  <!-- Start of Log in -->
+      <div id="login" class="container col s12">
+        <form action='login' method='post' class="col s12">
+            {% csrf_token %}
+          <div class="form-container">
+            <h3 class="cyan-text">Welcome Back!</h3>
+
+            <div class="row">
+              <div class="input-field col s12">
+                <input name="email" type="text" class="validate">
+                <label for="email">Email</label>
+              </div>
+            </div>
+            <div class="row">
+              <div class="input-field col s12">
+                <input name="password" type="password" class="validate">
+                <label for="password">Password</label>
+              </div>
+            </div>
+            <br>
+            <center>
+                <button class="btn waves-effect waves-light cyan" type="submit" name="action">Connect</button>
+              <br>
+              <br>
+            </center>
+          </div>
+        </form>
+      </div> <!--End of Log In-->
+
+  <!-- Start of Register -->
+      <div id="register" class="container col s12">
+        <form action='register' method='post' class="col s12">
+            {% csrf_token %}
+          <div class="form-container">
+            <h3 class="cyan-text">Hello!</h3>
+
+
+            <div class="row">
+              <div class="input-field col s6">
+                <input name="first_name" type="text" id="first_name" class="validate">
+                <label for="first_name">First Name</label>
+              </div>
+              <div class="input-field col s6">
+                <input name="last_name" type="text" id="last_name" class="validate">
+                <label for="last_name">Last Name</label>
+              </div>
+            </div>
+
+            <div class="row">
+              <div class="input-field col s12">
+                <input name="email" type="text" id="email" class="validate">
+                <label for="email">Email</label>
+              </div>
+            </div>
+            <div class="row">
+              <div class="input-field col s12">
+                <input name="password" type="password" id="password" class="validate">
+                <label for="password">Password</label>
+              </div>
+            </div>
+            <div class="row">
+              <div class="input-field col s12">
+                <input name="confirm_password" type="password" id="password-confirm" class="validate">
+                <label for="password-confirm">Password Confirmation</label>
+              </div>
+            </div>
+
+            <center>
+              <button class="btn waves-effect waves-light cyan" type="submit" name="action">Submit</button>
+            </center>
+
+          </div>
+        </form>
+      </div> <!--End of Register-->
+
+    </div> <!-- End of Container -->
+
+    <script src="https://code.jquery.com/jquery-3.3.1.js" integrity="sha256-2Kok7MbOyxpgUVvAk/HJ2jigOSYS2auK4Pfzbm7uH60=" crossorigin="anonymous"></script>
+
+  <!-- Compiled and minified JavaScript -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0-rc.2/js/materialize.min.js"></script>
+
+      <script>
+      $(document).ready(function(){
+        $('.tabs').tabs();
+      });
+    </script>
+
+  </body>
+  </html>
